@@ -1,0 +1,3 @@
+inicio
+    int n = 0;
+fim
