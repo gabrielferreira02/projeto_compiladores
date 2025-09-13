@@ -27,6 +27,8 @@ typedef struct token{
     int atributo;
 } Token;
 
+char * palavras_reservadas = {"inicio","fim","read","print","if","while","else","int","float","string"};
+
 int estado = 0;
 int partida = 0;
 int cont_simb_lidos = 0;
@@ -57,6 +59,16 @@ char * readFile(char * filename)
 
 }
 
+int ehPalavraReservada(char * id) {
+    int n = sizeof(palavras_reservadas) / sizeof(palavras_reservadas[0]);
+
+    for(int i = 0; i < n; i++) {
+        if(strcmp(palavras_reservadas[i], id) == 0) return 1;
+    }
+
+    return 0;
+}
+
 int falhar() 
 {
     switch (estado)
@@ -81,7 +93,12 @@ Token lerToken()
         switch (estado)
         {
         case 0:
-            /* code */
+            if(c == ' ' || c == '\n') {
+                estado = 0;
+                cont_simb_lidos++;
+            } else {
+                estado = falhar();
+            }
             break;
         
         default:
