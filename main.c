@@ -216,6 +216,8 @@ Token lerToken()
             }
             break;
         case 11:
+            //  ID reconhecido
+            // Falta implementar tabela de simbolos
             lexema[lexema_len] = '\0';
             PalavraReservada * verificaPalavraReservada = ehPalavraReservada(lexema);
             estado = 0;
