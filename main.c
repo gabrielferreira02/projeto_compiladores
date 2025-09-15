@@ -174,8 +174,42 @@ Token lerToken()
             else if(c == '>') estado = 6;
             else if(isdigit(c)) estado = 13;
             else if(isalpha(c) || c == '_') estado = 10;
+            else if(c == '-') estado = 30;
             else if(c == ';') {
                 printf("<;, >\n");
+                estado = 0;
+                cont_simb_lidos++;
+                token.nome_token = c;
+                return token;
+            }
+            else if(c == '+') {
+                printf("<+, >\n");
+                estado = 0;
+                cont_simb_lidos++;
+                token.nome_token = c;
+                return token;
+            }
+            else if(c == '*') {
+                printf("<*, >\n");
+                estado = 0;
+                cont_simb_lidos++;
+                token.nome_token = c;
+                return token;
+            }
+            else if(c == '/') {
+                printf("</, >\n");
+                estado = 0;
+                cont_simb_lidos++;
+                token.nome_token = c;
+                return token;
+            } else if(c == '(') {
+                printf("<(, >\n");
+                estado = 0;
+                cont_simb_lidos++;
+                token.nome_token = c;
+                return token;
+            } else if(c == ')') {
+                printf("<), >\n");
                 estado = 0;
                 cont_simb_lidos++;
                 token.nome_token = c;
@@ -273,7 +307,7 @@ Token lerToken()
             //  ID reconhecido
             lexema[lexema_len] = '\0';
             PalavraReservada * verificaPalavraReservada = ehPalavraReservada(lexema);
-            
+
             if(verificaPalavraReservada == NULL) {
                 token.nome_token = ID;
                 int idExiste = buscarSimbolo(lexema);
@@ -317,6 +351,25 @@ Token lerToken()
             estado = 0;
             lexema_len = 0;
             return token;
+            break;
+        case 30:
+            cont_simb_lidos++;
+            c = code[cont_simb_lidos];
+            if(c == '-') estado = 31;
+            else {
+                printf("<-, >\n");
+                token.nome_token = c;
+                estado = 0;
+                return token;
+            }
+            break;
+        case 31:
+            cont_simb_lidos++;
+            c = code[cont_simb_lidos];
+            if(c == '\n' || c == '\0') {
+                estado = 0;
+            }
+            else estado = 31;
             break;
         default:
             cont_simb_lidos++;
