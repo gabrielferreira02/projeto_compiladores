@@ -1,5 +1,8 @@
+-- comentario curto
 inicio
     int n = 0;
     int x = 120 - 1;
+    -- outro comentario
     if (1 > 2) ;
+    x = n;
 fim
