@@ -28,6 +28,7 @@ typedef struct token{
     int atributo;
 } Token;
 
+// Struct para palavras reservadas
 typedef struct palavra_reservada {
     char * nome;
     int nome_token;
@@ -44,6 +45,55 @@ PalavraReservada palavras_reservadas[] = {
     {"int", INT},
     {"float", FLOAT},{"string", STRING}
 };
+
+// Tabela de simbolos
+typedef struct simbolo
+{
+    char * nome;
+    int atributo;
+    struct simbolo * prox;
+} Simbolo;
+
+Simbolo * tabelaDeSimbolos = NULL;
+int quantiadeDeSimbolos = 0;
+
+Simbolo * criarSimbolo(char * nome, int atributo) {
+    Simbolo * el = (Simbolo *)malloc(sizeof(Simbolo));
+    el->nome = malloc(strlen(nome) + 1);
+    strcpy(el->nome, nome);
+    el->atributo = atributo;
+    el->prox = NULL;
+    return el;
+}
+
+void inserirSimbolo(char * nome, int atributo) {
+    Simbolo * el = criarSimbolo(nome, atributo);
+
+    if (tabelaDeSimbolos == NULL) {
+        tabelaDeSimbolos = el;
+    } else {
+        Simbolo * aux = tabelaDeSimbolos;
+        while (aux->prox != NULL) {
+            aux = aux->prox;
+        }
+        aux->prox = el;
+    }
+
+    quantiadeDeSimbolos++;
+}
+
+int buscarSimbolo(char * id) {
+    int contagem = 0;
+    Simbolo * aux = tabelaDeSimbolos;
+    while (aux != NULL) {
+        if (strcmp(id, aux->nome) == 0) {
+            return contagem;
+        }
+        contagem++;
+        aux = aux->prox;
+    }
+    return -1;
+}
 
 int estado = 0;
 int partida = 0;
@@ -77,6 +127,7 @@ char * readFile(char * filename)
 
 }
 
+// Verifica se o ID é uma palavra reservada
 PalavraReservada * ehPalavraReservada(char * id) {
     int n = sizeof(palavras_reservadas) / sizeof(palavras_reservadas[0]);
 
@@ -108,7 +159,7 @@ Token lerToken()
 {
     Token token;
     char c;
-    while (code[cont_simb_lidos] != '\0')
+    while (code[cont_simb_lidos] != '\0' || estado != 0)
     {
         switch (estado)
         {
@@ -123,6 +174,13 @@ Token lerToken()
             else if(c == '>') estado = 6;
             else if(isdigit(c)) estado = 13;
             else if(isalpha(c) || c == '_') estado = 10;
+            else if(c == ';') {
+                printf("<;, >\n");
+                estado = 0;
+                cont_simb_lidos++;
+                token.nome_token = c;
+                return token;
+            }
             else {
                 // estado = falhar();
                 cont_simb_lidos++;
@@ -209,30 +267,32 @@ Token lerToken()
             c = code[cont_simb_lidos];
 
             if(isdigit(c) || isalpha(c) || c == '_') estado = 10;
-            else if(c == ' ' || c == '\n') estado = 11;
-            else {
-                cont_simb_lidos++;
-                // falhar();
-            }
+            else estado = 11;
             break;
         case 11:
             //  ID reconhecido
-            // Falta implementar tabela de simbolos
             lexema[lexema_len] = '\0';
             PalavraReservada * verificaPalavraReservada = ehPalavraReservada(lexema);
-            estado = 0;
-            lexema_len = 0;
+            
             if(verificaPalavraReservada == NULL) {
-                printf("<ID, %s>\n", lexema);
                 token.nome_token = ID;
-                // alterar
-                token.atributo = 1;
-                return token;
+                int idExiste = buscarSimbolo(lexema);
+                
+                if(idExiste >= 0) {
+                    token.atributo = idExiste;
+                } else {
+                    inserirSimbolo(lexema, ID);
+                    token.atributo = quantiadeDeSimbolos - 1;
+                }
+                printf("<ID, %d>\n", token.atributo);
             } else {
                 printf("<%s, >\n", verificaPalavraReservada->nome);
                 token.nome_token = verificaPalavraReservada->nome_token;
-                return token;
             }   
+
+            estado = 0;
+            lexema_len = 0;
+            return token;
             break;
         case 13:
             // reconhecimento de numeros
@@ -242,13 +302,14 @@ Token lerToken()
 
             if(isdigit(c)) {
                 break;
-            } else if(c == '.') estado = 13;
+            }
+            else if(c == '.') estado = 13;
+            else if(c == '\0') estado = 19;
             else estado = 19;
             break;
         case 19:
             // numero inteiro reconhecido
             lexema[lexema_len] = '\0';
-            cont_simb_lidos++;
             int valor = atoi(lexema);
             printf("<NUM, %d>\n", valor);
             token.nome_token = NUM;
