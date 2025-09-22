@@ -22,10 +22,11 @@
 #define INICIO 272
 #define FIM 273
 #define READ 274
+#define LIMITE_CASAS_DECIMAIS 5
 
 typedef struct token{
     int nome_token;
-    int atributo;
+    double atributo;
 } Token;
 
 // Struct para palavras reservadas
@@ -102,6 +103,7 @@ int valor_lexico = 0;
 char * code;
 char lexema[100];
 char lexema_len = 0;
+int casas_decimais = 0;
 
 char * readFile(char * filename) 
 {
@@ -318,7 +320,7 @@ Token lerToken()
                     inserirSimbolo(lexema, ID);
                     token.atributo = quantiadeDeSimbolos - 1;
                 }
-                printf("<ID, %d>\n", token.atributo);
+                printf("<ID, %.f>\n", token.atributo);
             } else {
                 printf("<%s, >\n", verificaPalavraReservada->nome);
                 token.nome_token = verificaPalavraReservada->nome_token;
@@ -334,14 +336,32 @@ Token lerToken()
             cont_simb_lidos++;
             c = code[cont_simb_lidos];
 
-            if(isdigit(c)) {
-                break;
-            }
-            else if(c == '.') estado = 13;
-            else if(c == '\0') estado = 19;
-            else estado = 19;
+            if(isdigit(c)) estado = 13;
+            else if(c == '.') estado = 14;
+            else estado = 16;
             break;
-        case 19:
+        case 14:
+            lexema[lexema_len++] = c;
+            cont_simb_lidos++;
+            c = code[cont_simb_lidos];
+            casas_decimais++;
+
+            if(casas_decimais > LIMITE_CASAS_DECIMAIS) falhar(); 
+            else if(isdigit(c) && casas_decimais <= LIMITE_CASAS_DECIMAIS) estado = 14;
+            else estado = 15;
+            break;
+        case 15:
+            lexema[lexema_len] = '\0';
+            double valorDecimal = atof(lexema);
+            printf("<NUM, %.5f>\n", valorDecimal);
+            token.nome_token = NUM;
+            token.atributo = valorDecimal;
+            estado = 0;
+            lexema_len = 0;
+            casas_decimais = 0;
+            return token;
+            break;
+        case 16:
             // numero inteiro reconhecido
             lexema[lexema_len] = '\0';
             int valor = atoi(lexema);

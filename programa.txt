@@ -5,4 +5,5 @@ inicio
     -- outro comentario
     if (1 > 2) ;
     x = n;
+    float m = 9.5;
 fim
