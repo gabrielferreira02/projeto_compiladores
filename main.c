@@ -50,8 +50,9 @@ PalavraReservada palavras_reservadas[] = {
 // Tabela de simbolos
 typedef struct simbolo
 {
-    char * nome;
-    int atributo;
+    char * lexema;
+    int tipo_token;
+    double valor;
     struct simbolo * prox;
 } Simbolo;
 
@@ -60,9 +61,9 @@ int quantiadeDeSimbolos = 0;
 
 Simbolo * criarSimbolo(char * nome, int atributo) {
     Simbolo * el = (Simbolo *)malloc(sizeof(Simbolo));
-    el->nome = malloc(strlen(nome) + 1);
-    strcpy(el->nome, nome);
-    el->atributo = atributo;
+    el->lexema = malloc(strlen(nome) + 1);
+    strcpy(el->lexema, nome);
+    el->tipo_token = atributo;
     el->prox = NULL;
     return el;
 }
@@ -87,7 +88,7 @@ int buscarSimbolo(char * id) {
     int contagem = 0;
     Simbolo * aux = tabelaDeSimbolos;
     while (aux != NULL) {
-        if (strcmp(id, aux->nome) == 0) {
+        if (strcmp(id, aux->lexema) == 0) {
             return contagem;
         }
         contagem++;
