@@ -3,11 +3,13 @@
 #include <string.h>
 #include <ctype.h>
 
+// CLASSES
 #define ID 256
 #define NUM 257
+#define STRING 260
+// TIPOS
 #define INT 258
 #define FLOAT 259
-#define STRING 260
 #define LT 261
 #define LE 262
 #define EQ 263
