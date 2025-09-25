@@ -1,6 +1,6 @@
 -- comentario curto
 inicio
-    int n = 0;
+    int n = 10;
     int x = 120 - 1;
     -- outro comentario
     if (1 > 2) ;
@@ -12,5 +12,5 @@ inicio
         ]]
         -- curto
     ]]
-    float m = 9.5;
+    float m = -9.5;
 fim

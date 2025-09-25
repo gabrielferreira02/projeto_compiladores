@@ -389,6 +389,10 @@ Token lerToken()
             cont_simb_lidos++;
             c = code[cont_simb_lidos];
             if(c == '-') estado = 31;
+            else if(isdigit(c)) {
+                lexema[lexema_len++] = code[cont_simb_lidos - 1];
+                estado = 13;
+            }
             else {
                 printf("<-, >\n");
                 token.nome_token = c;
@@ -408,7 +412,6 @@ Token lerToken()
             else estado = 31;
             break;
         case 32: //comentário curto (-- e não possue [ imeditamente depois)
-            
             cont_simb_lidos++;
             c = code[cont_simb_lidos];
             if(c == '\n' || c == '\0') {
