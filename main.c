@@ -107,6 +107,7 @@ char * code;
 char lexema[100];
 char lexema_len = 0;
 int casas_decimais = 0;
+int contadorLinha= 1;
 
 char * readFile(char * filename) 
 {
@@ -152,7 +153,9 @@ int falhar()
     case 0:
         cont_simb_lidos++;
         break;
-    
+    case 34:
+        printf("Error no comentario longo na linha %d \n",contadorLinha);
+        break;
     default:
         printf("Error do compilador!");
         break;
@@ -164,16 +167,23 @@ Token lerToken()
 {
     Token token;
     char c;
+    int contadorColchetesAninhados=0;
+
     while (code[cont_simb_lidos] != '\0' || estado != 0)
     {
         switch (estado)
         {
         case 0:
             c = code[cont_simb_lidos];
-            if(c == ' ' || c == '\n') {
+            if(c == ' '){
                 estado = 0;
                 cont_simb_lidos++;
-            } 
+            }
+            else if(c == '\n'){
+                estado = 0;
+                contadorLinha++;
+                cont_simb_lidos++;
+            }
             else if(c == '<') estado = 1;
             else if(c == '=') estado = 5;
             else if(c == '>') estado = 6;
@@ -386,14 +396,79 @@ Token lerToken()
                 return token;
             }
             break;
-        case 31:
+        case 31: //estado de comentário inicial (--)
             cont_simb_lidos++;
             c = code[cont_simb_lidos];
             if(c == '\n' || c == '\0') {
                 estado = 0;
             }
+            else if(c=='['){
+                estado=33;
+            }
             else estado = 31;
             break;
+        case 32: //comentário curto (-- e não possue [ imeditamente depois)
+            
+            cont_simb_lidos++;
+            c = code[cont_simb_lidos];
+            if(c == '\n' || c == '\0') {
+                estado = 0;
+            }
+            else estado = 32;
+            break;
+        case 33: //comentário longo inicial (--[)
+            cont_simb_lidos++;
+            c = code[cont_simb_lidos];
+            if(c=='['){
+                estado=34;
+            }
+            else if(c == '\n' || c == '\0') {
+                estado = 0;
+            }
+            else estado=32;
+            break;
+        case 34: // comentário longo (--[[)
+            cont_simb_lidos++;
+            c = code[cont_simb_lidos];
+            if(c=='['){
+                estado=36;
+            }
+            else if(c == ']') {
+                estado = 35;
+            }
+            else if(c=='\0'){
+                
+                falhar();
+                estado=0;
+            }
+            else estado=34;
+            break;
+        case 35: //comentário longo (--[[])
+            cont_simb_lidos++;
+            c = code[cont_simb_lidos];
+            if(c==']'){
+                if(contadorColchetesAninhados==0){
+                    estado=0;
+                    cont_simb_lidos++;
+                }
+                else{
+                    --contadorColchetesAninhados;
+                    estado=34;
+                }
+            }
+            else estado=34;
+            
+            break;
+        case 36: //comentário longo contando se existe [[ interno
+            cont_simb_lidos++;
+            c = code[cont_simb_lidos];
+            if(c=='['){
+                ++contadorColchetesAninhados;
+                estado=34;
+            }
+            else estado=34;
+            break;
+
         default:
             cont_simb_lidos++;
             break;

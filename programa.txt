@@ -5,5 +5,12 @@ inicio
     -- outro comentario
     if (1 > 2) ;
     x = n;
+    -- [[
+        comentario longo
+        [[
+            outro longo
+        ]]
+        -- curto
+    ]]
     float m = 9.5;
 fim
