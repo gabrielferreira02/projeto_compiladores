@@ -4,6 +4,7 @@ inicio
     int x = 120 - 1;
     -- outro comentario
     if (1 > 2) ;
+    string s = "";
     x = n;
     -- [[
         comentario longo
@@ -12,5 +13,6 @@ inicio
         ]]
         -- curto
     ]]
+    string ss = "segunda string";
     float m = -9.5;
 fim

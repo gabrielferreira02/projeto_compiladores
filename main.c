@@ -6,8 +6,9 @@
 // CLASSES
 #define ID 256
 #define NUM 257
-#define STRING 260
+#define STRING_VALOR 275
 // TIPOS
+#define STRING 260
 #define INT 258
 #define FLOAT 259
 #define LT 261
@@ -46,7 +47,8 @@ PalavraReservada palavras_reservadas[] = {
     {"while", WHILE},
     {"else", ELSE},
     {"int", INT},
-    {"float", FLOAT},{"string", STRING}
+    {"float", FLOAT},
+    {"string", STRING}
 };
 
 // Tabela de simbolos
@@ -58,14 +60,34 @@ typedef struct simbolo
     struct simbolo * prox;
 } Simbolo;
 
+typedef struct string 
+{
+    char * valor;
+    struct string * prox;
+} String;
+
 Simbolo * tabelaDeSimbolos = NULL;
-int quantiadeDeSimbolos = 0;
+String * tabelaDeStrings = NULL;
+int quantidadeDeSimbolos = 0;
+int quantidadeDeStrings = 0;
 
 Simbolo * criarSimbolo(char * nome, int atributo) {
     Simbolo * el = (Simbolo *)malloc(sizeof(Simbolo));
     el->lexema = malloc(strlen(nome) + 1);
     strcpy(el->lexema, nome);
     el->tipo_token = atributo;
+    el->prox = NULL;
+    return el;
+}
+
+String * criarString(char * valor) {
+    String * el = (String *)malloc(sizeof(String));
+    el->valor = (char *)malloc(strlen(valor) + 1);
+    if (el->valor == NULL) { 
+        free(el); 
+        return NULL; 
+    }
+    strcpy(el->valor, valor);
     el->prox = NULL;
     return el;
 }
@@ -83,7 +105,32 @@ void inserirSimbolo(char * nome, int atributo) {
         aux->prox = el;
     }
 
-    quantiadeDeSimbolos++;
+    quantidadeDeSimbolos++;
+}
+
+int inserirString(char * valor) {
+    String * el = criarString(valor);
+
+    if(tabelaDeStrings == NULL) {
+        tabelaDeStrings = el;
+        quantidadeDeStrings = 1;
+        return quantidadeDeStrings;
+    } else {
+        String * aux = tabelaDeStrings;
+        int posicao = 0;
+        while(aux->prox != NULL) {
+            posicao++;
+            if(strcmp(aux->valor, valor) == 0) {
+                return posicao;
+            }
+
+            aux = aux->prox;
+        }
+        aux->prox = el;
+        quantidadeDeStrings++;
+    }
+
+    return quantidadeDeStrings;
 }
 
 int buscarSimbolo(char * id) {
@@ -108,6 +155,8 @@ char lexema[100];
 char lexema_len = 0;
 int casas_decimais = 0;
 int contadorLinha= 1;
+char str[100];
+int stringlen=0;
 
 char * readFile(char * filename) 
 {
@@ -189,6 +238,7 @@ Token lerToken()
             else if(c == '>') estado = 6;
             else if(isdigit(c)) estado = 13;
             else if(isalpha(c) || c == '_') estado = 10;
+            else if(c=='"') estado = 20;
             else if(c == '-') estado = 30;
             else if(c == ';') {
                 printf("<;, >\n");
@@ -331,7 +381,7 @@ Token lerToken()
                     token.atributo = idExiste;
                 } else {
                     inserirSimbolo(lexema, ID);
-                    token.atributo = quantiadeDeSimbolos - 1;
+                    token.atributo = quantidadeDeSimbolos - 1;
                 }
                 printf("<ID, %.f>\n", token.atributo);
             } else {
@@ -384,6 +434,59 @@ Token lerToken()
             estado = 0;
             lexema_len = 0;
             return token;
+            break;
+        case 20:    //reconhecimento de string
+            cont_simb_lidos++;
+            c = code[cont_simb_lidos];
+            if(c=='"'){  // string vazia
+                int valor_string = inserirString(""); // aponta para a tabela de strings
+                token.nome_token = STRING_VALOR;
+                token.atributo = valor_string;
+                printf("<STRING_VALOR, %d>\n", valor_string);
+                cont_simb_lidos++;
+                estado = 0;
+                return token;
+            }
+            else{
+                stringlen= 0; // tamanho atual da string
+                estado=21;
+            }
+            break;
+        case 21: //adicionando em str os chars e verificando ocorrencia de "\\"
+            cont_simb_lidos++;
+            c = code[cont_simb_lidos];
+            if(c=='\\'){
+                estado=22;
+            }
+            else if(c=='"'){
+                str[stringlen]='\0';
+                int valor_string = inserirString(str); // aponta para a tabela de strings
+                token.nome_token = STRING_VALOR;
+                token.atributo = valor_string;
+                printf("<STRING_VALOR, %d>\n", valor_string);
+                cont_simb_lidos++;
+                estado=0;
+                stringlen = 0;
+                return token;
+            }
+            else{
+                estado=21;
+                str[stringlen]=c;
+                stringlen++;
+            }
+            break;
+        case 22:    // \a, \b, \f, \n, \r, \t, \v, \\, \”
+            cont_simb_lidos++;
+            c = code[cont_simb_lidos];
+            if(c=='"' || c=='a' || c=='b' || c=='f' || c=='n' || c=='r' || c=='t' || c=='v' || c=='\\'){ 
+                estado=21;
+                str[stringlen]=c;
+                stringlen++;
+            }
+            else{
+                falhar();
+                estado=0;
+            }
             break;
         case 30:
             cont_simb_lidos++;
