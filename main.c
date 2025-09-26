@@ -448,45 +448,78 @@ Token lerToken()
                 return token;
             }
             else{
-                stringlen= 0; // tamanho atual da string
-                estado=21;
+                stringlen = 0; // tamanho atual da string
+                estado = 21;
             }
             break;
         case 21: //adicionando em str os chars e verificando ocorrencia de "\\"
-            cont_simb_lidos++;
             c = code[cont_simb_lidos];
             if(c=='\\'){
-                estado=22;
+                estado = 22;
+                cont_simb_lidos++;
             }
             else if(c=='"'){
-                str[stringlen]='\0';
+                str[stringlen] = '\0';
                 int valor_string = inserirString(str); // aponta para a tabela de strings
                 token.nome_token = STRING_VALOR;
                 token.atributo = valor_string;
+                printf("'%s'\n", str);
                 printf("<STRING_VALOR, %d>\n", valor_string);
                 cont_simb_lidos++;
-                estado=0;
+                estado = 0;
                 stringlen = 0;
                 return token;
             }
             else{
-                estado=21;
-                str[stringlen]=c;
+                estado = 21;
+                str[stringlen] = c;
                 stringlen++;
+                cont_simb_lidos++;
             }
             break;
         case 22:    // \a, \b, \f, \n, \r, \t, \v, \\, \”
-            cont_simb_lidos++;
-            c = code[cont_simb_lidos];
-            if(c=='"' || c=='a' || c=='b' || c=='f' || c=='n' || c=='r' || c=='t' || c=='v' || c=='\\'){ 
-                estado=21;
-                str[stringlen]=c;
-                stringlen++;
-            }
-            else{
+        c = code[cont_simb_lidos];
+        char char_scape;
+
+            switch (c)
+            {
+            case 'a':
+                char_scape = '\a';
+                break;
+            case 'b':
+                char_scape = '\b';
+                break;
+            case 'f':
+            char_scape = '\f';
+            break;
+            case 'n':
+                char_scape = '\n';
+                break;
+            case 'r':
+                char_scape = '\r';
+                break;
+            case 't':
+                char_scape = '\t';
+                break;
+            case 'v':
+                char_scape = '\v';
+                break;
+            case '\\':
+                char_scape = '\\';
+                break;
+                case '"':
+                char_scape = '"';
+                break;
+                default:
                 falhar();
-                estado=0;
+                estado = 0;
+                break;
             }
+            
+            estado = 21;
+            str[stringlen] = char_scape;
+            stringlen++;
+            cont_simb_lidos++;
             break;
         case 30:
             cont_simb_lidos++;

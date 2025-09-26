@@ -13,6 +13,6 @@ inicio
         ]]
         -- curto
     ]]
-    string ss = "segunda string";
+    string ss = "segunda \tstring";
     float m = -9.5;
 fim
