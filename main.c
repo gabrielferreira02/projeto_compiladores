@@ -463,7 +463,6 @@ Token lerToken()
                 int valor_string = inserirString(str); // aponta para a tabela de strings
                 token.nome_token = STRING_VALOR;
                 token.atributo = valor_string;
-                printf("'%s'\n", str);
                 printf("<STRING_VALOR, %d>\n", valor_string);
                 cont_simb_lidos++;
                 estado = 0;
