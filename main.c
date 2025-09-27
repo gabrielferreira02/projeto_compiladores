@@ -155,6 +155,7 @@ char lexema[100];
 char lexema_len = 0;
 int casas_decimais = 0;
 int contadorLinha= 1;
+char erro_char;
 char str[100];
 int stringlen=0;
 
@@ -200,13 +201,16 @@ int falhar()
     switch (estado)
     {
     case 0:
-        cont_simb_lidos++;
+        printf("Caractere %c inesperado na linha %d\n", erro_char, contadorLinha);
+        break;
+    case 14:
+        printf("Erro em numero float. Casas decimais excedidas na linha %d\n", contadorLinha);
         break;
     case 34:
-        printf("Error no comentario longo na linha %d \n",contadorLinha);
+        printf("Erro no comentario longo na linha %d \n", contadorLinha);
         break;
     default:
-        printf("Error do compilador!");
+        printf("Erro do compilador!");
         break;
     }
     return (partida);
@@ -281,7 +285,8 @@ Token lerToken()
                 return token;
             }
             else {
-                // estado = falhar();
+                erro_char = c;
+                estado = falhar();
                 cont_simb_lidos++;
             }
             break;
@@ -359,7 +364,9 @@ Token lerToken()
             {
                 /*implementar ações referentes aos estado */
                 estado = falhar();
+                cont_simb_lidos++;
             }
+            break;
         case 10:
             lexema[lexema_len++] = c;
             cont_simb_lidos++;
@@ -372,7 +379,7 @@ Token lerToken()
             //  ID reconhecido
             lexema[lexema_len] = '\0';
             PalavraReservada * verificaPalavraReservada = ehPalavraReservada(lexema);
-
+            
             if(verificaPalavraReservada == NULL) {
                 token.nome_token = ID;
                 int idExiste = buscarSimbolo(lexema);
@@ -409,7 +416,13 @@ Token lerToken()
             c = code[cont_simb_lidos];
             casas_decimais++;
 
-            if(casas_decimais > LIMITE_CASAS_DECIMAIS) falhar(); 
+            if(casas_decimais > LIMITE_CASAS_DECIMAIS) {
+                estado = falhar();
+                cont_simb_lidos++;
+                lexema_len = 0;
+                casas_decimais = 0;
+                break;
+            } 
             else if(isdigit(c) && casas_decimais <= LIMITE_CASAS_DECIMAIS) estado = 14;
             else estado = 15;
             break;
@@ -510,8 +523,9 @@ Token lerToken()
                 char_scape = '"';
                 break;
                 default:
-                falhar();
-                estado = 0;
+                estado = falhar();
+                cont_simb_lidos++;
+                stringlen = 0;
                 break;
             }
             
@@ -574,10 +588,9 @@ Token lerToken()
             else if(c == ']') {
                 estado = 35;
             }
-            else if(c=='\0'){
-                
-                falhar();
-                estado=0;
+            else if(c=='\0'){  
+                estado = falhar();
+                cont_simb_lidos++;
             }
             else estado=34;
             break;
@@ -606,7 +619,6 @@ Token lerToken()
             }
             else estado=34;
             break;
-
         default:
             cont_simb_lidos++;
             break;
