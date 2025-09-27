@@ -244,8 +244,23 @@ Token lerToken()
             else if(isalpha(c) || c == '_') estado = 10;
             else if(c=='"') estado = 20;
             else if(c == '-') estado = 30;
+            else if(c == '!') estado = 37;
             else if(c == ';') {
                 printf("<;, >\n");
+                estado = 0;
+                cont_simb_lidos++;
+                token.nome_token = c;
+                return token;
+            }
+            else if(c == '{') {
+                printf("<{, >\n");
+                estado = 0;
+                cont_simb_lidos++;
+                token.nome_token = c;
+                return token;
+            }
+            else if(c == '}') {
+                printf("<}, >\n");
                 estado = 0;
                 cont_simb_lidos++;
                 token.nome_token = c;
@@ -308,7 +323,7 @@ Token lerToken()
             break;
         case 3:
             cont_simb_lidos++;
-            printf("<relop, NE>\n");
+            printf("<RELOP, NE>\n");
             token.nome_token = RELOP;
             token.atributo = NE;
             estado = 0;
@@ -316,7 +331,7 @@ Token lerToken()
             break;
         case 4:
             cont_simb_lidos++;
-            printf("<relop, LT>\n");
+            printf("<RELOP, LT>\n");
             token.nome_token = RELOP;
             token.atributo = LT;
             estado = 0;
@@ -324,11 +339,15 @@ Token lerToken()
             break;
         case 5:
             cont_simb_lidos++;
-            printf("<relop, EQ>\n");
-            token.nome_token = RELOP;
-            token.atributo = EQ;
-            estado = 0;
-            return(token);
+            c = code[cont_simb_lidos];
+
+            if(c == '=') estado = 9;
+            else {
+                printf("<=, >\n");
+                token.nome_token = c;
+                estado = 0;
+                return(token);
+            }
             break;
         case 6:
             cont_simb_lidos++;
@@ -338,7 +357,7 @@ Token lerToken()
             break;
         case 7:
             cont_simb_lidos++;
-            printf("<relop, GE>\n");
+            printf("<RELOP, GE>\n");
             token.nome_token = RELOP;
             token.atributo = GE;
             estado = 0;
@@ -346,7 +365,7 @@ Token lerToken()
             break;
         case 8:
             cont_simb_lidos++;
-            printf("<relop, GT>\n");
+            printf("<RELOP, GT>\n");
             token.nome_token = RELOP;
             token.atributo = GT;
             estado = 0;
@@ -354,18 +373,12 @@ Token lerToken()
             break;
 
         case 9:
-            c = code[cont_simb_lidos];
-            if((c == ' ')||(c == '\n'))
-            {
-                estado = 0;
-                cont_simb_lidos++;
-            }
-            else
-            {
-                /*implementar ações referentes aos estado */
-                estado = falhar();
-                cont_simb_lidos++;
-            }
+            cont_simb_lidos++;
+            printf("<RELOP, EQ>\n");
+            token.nome_token = RELOP;
+            token.atributo = EQ;
+            estado = 0;
+            return(token);
             break;
         case 10:
             lexema[lexema_len++] = c;
@@ -618,6 +631,24 @@ Token lerToken()
                 estado=34;
             }
             else estado=34;
+            break;
+        case 37:
+            cont_simb_lidos++;
+            c = code[cont_simb_lidos];
+
+            if(c == '=') estado = 38;
+            else {
+                estado = falhar();
+                cont_simb_lidos++;
+            }
+            break;
+        case 38:
+            cont_simb_lidos++;
+            printf("<RELOP, NE>\n");
+            token.nome_token = RELOP;
+            token.atributo = NE;
+            estado = 0;
+            return token;
             break;
         default:
             cont_simb_lidos++;

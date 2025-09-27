@@ -1,19 +1,9 @@
--- comentario curto
 inicio
     int n = 10;
-    int x = 120 - 1;
-    float f = 9.567890;
-    -- outro comentario
-    if (1 > 2) ;
-    string s = "";
-    x = n;
-    -- [[
-        comentario longo
-        [[
-            outro longo
-        ]]
-        -- curto
-    ]]
-    string ss = "segunda \tstring";
-    float m = -9.5;
+    float f = 10.5;
+    string s = "string exemplo";
+    while(n > 0) {
+        n = n - 1;
+    }
+    print(s);
 fim
