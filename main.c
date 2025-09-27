@@ -244,7 +244,6 @@ Token lerToken()
             else if(isalpha(c) || c == '_') estado = 10;
             else if(c=='"') estado = 20;
             else if(c == '-') estado = 30;
-            else if(c == '!') estado = 37;
             else if(c == ';') {
                 printf("<;, >\n");
                 estado = 0;
@@ -631,24 +630,6 @@ Token lerToken()
                 estado=34;
             }
             else estado=34;
-            break;
-        case 37:
-            cont_simb_lidos++;
-            c = code[cont_simb_lidos];
-
-            if(c == '=') estado = 38;
-            else {
-                estado = falhar();
-                cont_simb_lidos++;
-            }
-            break;
-        case 38:
-            cont_simb_lidos++;
-            printf("<RELOP, NE>\n");
-            token.nome_token = RELOP;
-            token.atributo = NE;
-            estado = 0;
-            return token;
             break;
         default:
             cont_simb_lidos++;
