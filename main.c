@@ -206,6 +206,9 @@ int falhar()
     case 14:
         printf("Erro em numero float. Casas decimais excedidas na linha %d\n", contadorLinha);
         break;
+    case 21:
+        printf("Erro: string na linha %d ultrapassa o limite de caracteres\n", contadorLinha);
+        break;
     case 34:
         printf("Erro no comentario longo na linha %d \n", contadorLinha);
         break;
@@ -479,6 +482,26 @@ Token lerToken()
             break;
         case 21: //adicionando em str os chars e verificando ocorrencia de "\\"
             c = code[cont_simb_lidos];
+
+            if(stringlen >= 100) {
+                estado = falhar();
+                
+                cont_simb_lidos++;
+                char char_atual = code[cont_simb_lidos];
+                
+                while (char_atual != '"' && char_atual != '\0') {
+                    cont_simb_lidos++;
+                    char_atual = code[cont_simb_lidos];
+                }
+                
+                if (char_atual == '"') {
+                    cont_simb_lidos++;
+                }
+                estado = 0; 
+                stringlen = 0;
+                break;
+            }
+
             if(c=='\\'){
                 estado = 22;
                 cont_simb_lidos++;
