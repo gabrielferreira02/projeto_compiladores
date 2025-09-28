@@ -617,7 +617,9 @@ Token lerToken()
         case 34: // comentário longo (--[[)
             cont_simb_lidos++;
             c = code[cont_simb_lidos];
-            if(c=='['){
+
+            if(c == '\n') contadorLinha++;
+            else if(c=='['){
                 estado=36;
             }
             else if(c == ']') {
