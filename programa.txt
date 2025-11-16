@@ -1,9 +1,4 @@
 inicio
-    int n = 10;
-    float f = 10.5;
-    string s = "string exemplo";
-    while(n > 0) {
-        n = n - 1;
-    }
-    print(s);
+    int x;
+    x = 10;
 fim
