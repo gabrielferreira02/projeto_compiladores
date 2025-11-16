@@ -337,7 +337,7 @@ Token lerToken()
 
             if(c == '=') estado = 9;
             else {
-                token.nome_token = c;
+                token.nome_token = code[cont_simb_lidos - 1];
                 estado = 0;
                 return(token);
             }
@@ -796,16 +796,18 @@ void args()
 
 void comando_id_linha()
 {
-    if(olharToken().nome_token == '=') {
-        obterToken();   
+    token = olharToken();
+    
+    if(token.nome_token == '=') {  
+        obterToken();  
         expr();
         return;
     }
 
-    if(olharToken().nome_token == '(') {
+    if(token.nome_token == '(') {
         obterToken();  
         args();
-
+        
         token = obterToken(); 
         if(token.nome_token != ')') {
             printf("Erro em comando_id_linha: esperado )\n");
