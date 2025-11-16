@@ -219,6 +219,9 @@ int falhar()
     return (partida);
 }
 
+Token proximo_token;
+int token_cache = 0;
+
 Token lerToken() 
 {
     Token token;
@@ -248,54 +251,46 @@ Token lerToken()
             else if(c=='"') estado = 20;
             else if(c == '-') estado = 30;
             else if(c == ';') {
-                printf("<;, >\n");
                 estado = 0;
                 cont_simb_lidos++;
                 token.nome_token = c;
                 return token;
             }
             else if(c == '{') {
-                printf("<{, >\n");
                 estado = 0;
                 cont_simb_lidos++;
                 token.nome_token = c;
                 return token;
             }
             else if(c == '}') {
-                printf("<}, >\n");
                 estado = 0;
                 cont_simb_lidos++;
                 token.nome_token = c;
                 return token;
             }
             else if(c == '+') {
-                printf("<+, >\n");
                 estado = 0;
                 cont_simb_lidos++;
                 token.nome_token = c;
                 return token;
             }
             else if(c == '*') {
-                printf("<*, >\n");
                 estado = 0;
                 cont_simb_lidos++;
                 token.nome_token = c;
                 return token;
             }
             else if(c == '/') {
-                printf("</, >\n");
                 estado = 0;
                 cont_simb_lidos++;
                 token.nome_token = c;
                 return token;
             } else if(c == '(') {
-                printf("<(, >\n");
                 estado = 0;
                 cont_simb_lidos++;
                 token.nome_token = c;
                 return token;
             } else if(c == ')') {
-                printf("<), >\n");
                 estado = 0;
                 cont_simb_lidos++;
                 token.nome_token = c;
@@ -317,7 +312,6 @@ Token lerToken()
             break;
         case 2:
             cont_simb_lidos++;
-            printf("<RELOP, LE>\n");
             token.nome_token = RELOP;
             token.atributo = LE;
             estado = 0;
@@ -325,7 +319,6 @@ Token lerToken()
             break;
         case 3:
             cont_simb_lidos++;
-            printf("<RELOP, NE>\n");
             token.nome_token = RELOP;
             token.atributo = NE;
             estado = 0;
@@ -333,7 +326,6 @@ Token lerToken()
             break;
         case 4:
             cont_simb_lidos++;
-            printf("<RELOP, LT>\n");
             token.nome_token = RELOP;
             token.atributo = LT;
             estado = 0;
@@ -345,7 +337,6 @@ Token lerToken()
 
             if(c == '=') estado = 9;
             else {
-                printf("<=, >\n");
                 token.nome_token = c;
                 estado = 0;
                 return(token);
@@ -359,7 +350,6 @@ Token lerToken()
             break;
         case 7:
             cont_simb_lidos++;
-            printf("<RELOP, GE>\n");
             token.nome_token = RELOP;
             token.atributo = GE;
             estado = 0;
@@ -367,7 +357,6 @@ Token lerToken()
             break;
         case 8:
             cont_simb_lidos++;
-            printf("<RELOP, GT>\n");
             token.nome_token = RELOP;
             token.atributo = GT;
             estado = 0;
@@ -376,7 +365,6 @@ Token lerToken()
 
         case 9:
             cont_simb_lidos++;
-            printf("<RELOP, EQ>\n");
             token.nome_token = RELOP;
             token.atributo = EQ;
             estado = 0;
@@ -405,12 +393,9 @@ Token lerToken()
                     inserirSimbolo(lexema, ID);
                     token.atributo = quantidadeDeSimbolos - 1;
                 }
-                printf("<ID, %.f>\n", token.atributo);
             } else {
-                printf("<%s, >\n", verificaPalavraReservada->nome);
                 token.nome_token = verificaPalavraReservada->nome_token;
             }   
-
             estado = 0;
             lexema_len = 0;
             return token;
@@ -444,7 +429,6 @@ Token lerToken()
         case 15:
             lexema[lexema_len] = '\0';
             double valorDecimal = atof(lexema);
-            printf("<NUM, %.5f>\n", valorDecimal);
             token.nome_token = NUM;
             token.atributo = valorDecimal;
             estado = 0;
@@ -456,7 +440,6 @@ Token lerToken()
             // numero inteiro reconhecido
             lexema[lexema_len] = '\0';
             int valor = atoi(lexema);
-            printf("<NUM, %d>\n", valor);
             token.nome_token = NUM;
             token.atributo = valor;
             estado = 0;
@@ -470,7 +453,6 @@ Token lerToken()
                 int valor_string = inserirString(""); // aponta para a tabela de strings
                 token.nome_token = STRING_VALOR;
                 token.atributo = valor_string;
-                printf("<STRING_VALOR, %d>\n", valor_string);
                 cont_simb_lidos++;
                 estado = 0;
                 return token;
@@ -511,7 +493,6 @@ Token lerToken()
                 int valor_string = inserirString(str); // aponta para a tabela de strings
                 token.nome_token = STRING_VALOR;
                 token.atributo = valor_string;
-                printf("<STRING_VALOR, %d>\n", valor_string);
                 cont_simb_lidos++;
                 estado = 0;
                 stringlen = 0;
@@ -578,7 +559,6 @@ Token lerToken()
                 estado = 13;
             }
             else {
-                printf("<-, >\n");
                 token.nome_token = c;
                 estado = 0;
                 return token;
@@ -667,11 +647,375 @@ Token lerToken()
     return token;
 }
 
+
+// Análise sintática
+Token olharToken()
+{
+    if(!token_cache) {
+        proximo_token = lerToken();
+        token_cache = 1;
+    }
+    return proximo_token;
+}
+
+Token obterToken() {
+    if(token_cache) {
+        token_cache = 0;
+        return proximo_token;
+    }
+    return lerToken();
+}
+Token token;
+
+void expr_list();
+void comando();
+void comandos();
+void tipo();
+void decl();
+void expr();
+
+void tipo()
+{
+    token = obterToken();
+    if(token.nome_token != STRING && 
+        token.nome_token != FLOAT && 
+        token.nome_token != INT) {
+        printf("Erro em tipo: esperado string, float ou int\n");
+        return;
+    }
+}
+
+void decl()
+{
+    tipo();
+
+    token = obterToken();
+    if(token.nome_token != ID) {
+        printf("Erro em decl: esperado id\n");
+        return;
+    }
+
+    token = obterToken();
+    if(token.nome_token != ';') {
+        printf("Erro em decl: esperado ;\n");
+        return;
+    }
+}
+
+void decls()
+{
+    while (olharToken().nome_token == INT 
+        || olharToken().nome_token == FLOAT 
+        || olharToken().nome_token == STRING)
+    {
+        decl();
+    }
+}
+
+void factor()
+{
+    token = olharToken();  
+
+    if(token.nome_token == NUM ||
+       token.nome_token == ID  ||
+       token.nome_token == STRING) {
+            obterToken();
+           return;
+       }
+
+    if(token.nome_token == '(') {
+        obterToken();
+        expr();
+        token = obterToken(); 
+        if(token.nome_token != ')') {
+            printf("Erro em factor: esperado )\n");
+        }
+        return;
+    }
+
+    if(token.nome_token == '-') {
+        obterToken();
+        factor();
+        return;
+    }
+
+    printf("erro em factor: token inesperado\n");
+}
+
+void term_linha()
+{
+    if(olharToken().nome_token == '*' || olharToken().nome_token == '/') {
+        token = obterToken();
+        factor();
+    }
+}
+
+void term()
+{
+    factor();
+    term_linha();
+}
+
+
+void expr_linha()
+{
+
+    if(olharToken().nome_token == '+' || olharToken().nome_token == '-') {
+        token = obterToken();
+        term();
+    }
+
+}
+
+void expr()
+{
+    term();
+    expr_linha();
+}
+
+void expr_list_linha()
+{
+    
+    if(olharToken().nome_token == ',') {
+        token = obterToken();
+        expr_list();
+    }
+}
+
+void expr_list()
+{
+    expr();
+    expr_list_linha();
+}
+
+
+void args()
+{
+    expr_list();
+}
+
+void comando_id_linha()
+{
+    if(olharToken().nome_token == '=') {
+        obterToken();   
+        expr();
+        return;
+    }
+
+    if(olharToken().nome_token == '(') {
+        obterToken();  
+        args();
+
+        token = obterToken(); 
+        if(token.nome_token != ')') {
+            printf("Erro em comando_id_linha: esperado )\n");
+        }
+        return;
+    }
+
+    printf("erro em comando_id_linha: esperado = ou (\n");
+}
+
+void comando_id()
+{
+    comando_id_linha();
+}
+
+
+void entrada()
+{
+    token = obterToken();
+
+    if(token.nome_token != '(') {
+        printf("Erro em entrada: esperado (\n");
+        return;
+    }
+
+    token = obterToken();
+
+    if(token.nome_token != ID) {
+        printf("Erro em entrada: esperado id\n");
+        return;
+    }
+
+    token = obterToken();
+
+    if(token.nome_token != ')') {
+        printf("Erro em entrada: esperado )\n");
+        return;
+    }
+}
+
+void saida()
+{
+    token = obterToken();
+
+    if(token.nome_token != '(') {
+        printf("Erro em saida: esperado (\n");
+        return;
+    }
+
+    expr();
+
+    token = obterToken();
+
+    if(token.nome_token != ')') {
+        printf("Erro em saida: esperado )\n");
+        return;
+    }    
+}
+
+void else_opt()
+{
+    if(olharToken().nome_token == ELSE) {
+        token = obterToken();
+        comando();
+    }
+}
+
+void if_stmt()
+{
+    token = obterToken();
+
+    if(token.nome_token != '(') {
+        printf("Erro em if_stmt: esperado (\n");
+        return;
+    }
+
+    expr();
+
+    token = obterToken();
+
+    if(token.nome_token != ')') {
+        printf("Erro em if_stmt: esperado )\n");
+        return;
+    }
+
+    comando();
+    else_opt();
+}
+
+
+void while_stmt()
+{
+    token = obterToken();
+
+    if(token.nome_token != '(') {
+        printf("Erro em while_stmt: esperado (\n");
+        return;
+    }
+
+    expr();
+
+    token = obterToken();
+
+    if(token.nome_token != ')') {
+        printf("Erro em while_stmt: esperado )\n");
+        return;
+    }
+
+    comando();
+}
+
+void bloco()
+{
+    comandos();
+
+    token = obterToken();
+
+    if(token.nome_token != '}') {
+        printf("Erro em bloco: esperado }\n");
+        return;
+    }
+}
+
+void comando()
+{
+    token = olharToken();
+    if(token.nome_token == ID) {
+        obterToken();
+        comando_id();
+        token = obterToken();
+
+        if(token.nome_token != ';') {
+            printf("Erro em comando: esperado ;\n");
+            return;
+        }
+
+    } else if(token.nome_token == READ) {
+        entrada();
+        token = obterToken();
+
+        if(token.nome_token != ';') {
+            printf("Erro em comando: esperado ;\n");
+            return;
+        }
+    } else if(token.nome_token == PRINT) {
+        saida();
+        token = obterToken();
+
+        if(token.nome_token != ';') {
+            printf("Erro em comando: esperado ;\n");
+            return;
+        }
+    } else if(token.nome_token == IF) {
+        if_stmt();
+    } else if(token.nome_token == WHILE) {
+        while_stmt();
+    } else if(token.nome_token == '{') {
+        bloco();
+    } else {
+        return;
+    }
+}
+
+void comandos()
+{
+    while (olharToken().nome_token == ID
+        || olharToken().nome_token == READ
+        || olharToken().nome_token == PRINT
+        || olharToken().nome_token == IF
+        || olharToken().nome_token == WHILE
+        || olharToken().nome_token == '{')
+    {
+        comando();
+    }
+}
+
+void programa() 
+{
+    token = obterToken();
+
+    if(token.nome_token != INICIO) {
+        printf("Erro em programa: esperado inicio\n");
+        return;
+    }
+
+    decls();
+    comandos();
+
+    token = obterToken();
+    if(token.nome_token != FIM) {
+        printf("Erro em programa: esperado fim\n");
+        return;
+    }
+
+    token = obterToken();
+    if(token.nome_token != EOF) {
+        printf("Erro em programa: esperado fim de arquivo\n");
+        return;
+    }
+
+    printf("fim do programa\n");
+    
+    return;
+}
+
 int main() 
 {
     Token token;
     code = readFile("programa.txt");
-    while((token = lerToken()).nome_token != EOF) {}
+    programa();
 
     free(code);
     return 0;
