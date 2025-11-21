@@ -852,11 +852,12 @@ void saida()
 {
     token = obterToken();
 
-    if(token.nome_token != '(') {
+    if(olharToken().nome_token != '(') {
         printf("Erro em saida: esperado (\n");
         return;
     }
 
+    token = obterToken();
     expr();
 
     token = obterToken();
@@ -878,12 +879,12 @@ void else_opt()
 void if_stmt()
 {
     token = obterToken();
-
-    if(token.nome_token != '(') {
+    if(olharToken().nome_token != '(') {
         printf("Erro em if_stmt: esperado (\n");
         return;
     }
 
+    token = obterToken();
     expr();
 
     token = obterToken();
@@ -902,10 +903,11 @@ void while_stmt()
 {
     token = obterToken();
 
-    if(token.nome_token != '(') {
+    if(olharToken().nome_token != '(') {
         printf("Erro em while_stmt: esperado (\n");
         return;
     }
+    token = obterToken();
 
     expr();
 
@@ -945,6 +947,7 @@ void comando()
         }
 
     } else if(token.nome_token == READ) {
+        obterToken();
         entrada();
         token = obterToken();
 
@@ -965,6 +968,7 @@ void comando()
     } else if(token.nome_token == WHILE) {
         while_stmt();
     } else if(token.nome_token == '{') {
+        obterToken();
         bloco();
     } else {
         return;
