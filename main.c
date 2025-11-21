@@ -554,12 +554,8 @@ Token lerToken()
             cont_simb_lidos++;
             c = code[cont_simb_lidos];
             if(c == '-') estado = 31;
-            else if(isdigit(c)) {
-                lexema[lexema_len++] = code[cont_simb_lidos - 1];
-                estado = 13;
-            }
             else {
-                token.nome_token = c;
+                token.nome_token = '-';
                 estado = 0;
                 return token;
             }
@@ -665,7 +661,63 @@ Token obterToken() {
     }
     return lerToken();
 }
+
 Token token;
+
+int simbolosSincronizacao[] = {';', IF, WHILE, ')', '(', INT, FLOAT, STRING, ID, READ, PRINT, '{', '}', NUM, '-'};
+int tamanhoSimbolosSincronizacao = sizeof(simbolosSincronizacao) / sizeof(simbolosSincronizacao[0]);
+
+void modoPanico(int *lista, int tamanho){
+
+    int achou = 0;
+    while(achou==0){
+
+        token = obterToken();
+        Token t = olharToken();
+        if (token.nome_token == EOF) {
+            return;
+        }
+
+        for(int i = 0; i < tamanho; i++){
+            if(lista[i] == t.nome_token){
+                achou = 1;
+                break;
+            }
+        }
+
+        for(int i = 0; i < tamanhoSimbolosSincronizacao; i++){
+            if(simbolosSincronizacao[i] == t.nome_token){
+                achou = 1;
+                break;
+            }
+        }
+    }
+    return;
+}
+
+/* arcii code for  {=123 }=125 ,=44 )=41 (=40 ;=59 +=43 -=45 *=42 /=47
+int Fdecls[8]= {ID, READ, PRINT, IF, WHILE, 123, FIM, 125};
+int Fdecl[11]= {INT,FLOAT,STRING, ID, READ, PRINT, IF, WHILE, 123, FIM, 125};
+int Fid[1]= {ID};
+int Fcomandos[2]= {FIM, 125};
+int Fcomando[9]= {ID, READ, PRINT, IF, WHILE, 123, FIM, 125, ELSE};
+int Fcomando_id[1]= {59};
+int Fcomando_id_linha[1]= {59};
+int Fargs[1]= {41};
+int Fexpr_list[1]= {41};
+int Fexpr_list_linha[1]= {41};
+int Fentrada[1]= {59};
+int Fsaida[1]= {59};
+int Fif_stmt[9]= {ID, READ, PRINT, IF, WHILE, 123, FIM, 125, ELSE};
+int Felse_opt[9]= {ID, READ, PRINT, IF, WHILE, 123, FIM, 125, ELSE};
+int Fwhile_stmt[9]= {ID, READ, PRINT, IF, WHILE, 123, FIM, 125, ELSE};
+int Fbloco[9]= {ID, READ, PRINT, IF, WHILE, 123, FIM, 125, ELSE};
+int Fexpr[2]= {44,41};
+int Fexpr_linha[2]= {44,41}; 
+int Fterm[]= {43, 45, 44, 41}
+int Fterm_linha[]= {43, 45, 44, 41}
+int Ffactor[]= {42, 47, 43, 45, 44 , 41}
+*/
 
 void expr_list();
 void comando();
@@ -728,7 +780,9 @@ void factor()
         expr();
         token = obterToken(); 
         if(token.nome_token != ')') {
-            printf("Erro em factor: esperado )\n");
+            printf("Erro em factor: esperado ) na linha %d\n", contadorLinha);
+            int follow[7]= {'*', '/', '+', '-', ',', ')'};
+            modoPanico(follow, 7);
         }
         return;
     }
@@ -739,7 +793,9 @@ void factor()
         return;
     }
 
-    printf("erro em factor: token inesperado\n");
+    printf("erro em factor: token inesperado na linha %d\n", contadorLinha);
+    int follow[7]= {'*', '/', '+', '-', ',', ')'};
+    modoPanico(follow, 7);
 }
 
 void term_linha()

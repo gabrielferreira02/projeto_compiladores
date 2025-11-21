@@ -1,7 +1,7 @@
 inicio
+    int n;
     int x;
-    x = 10;
-    while(x) {
-        x = x + 1;
-    }
+    n=else;
+    x=120-1;
+    if(1-2){ x=x+n;}
 fim
