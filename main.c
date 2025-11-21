@@ -732,24 +732,29 @@ void tipo()
     if(token.nome_token != STRING && 
         token.nome_token != FLOAT && 
         token.nome_token != INT) {
-        printf("Erro em tipo: esperado string, float ou int\n");
+        printf("Erro em tipo: esperado string, float ou int na linha %d\n", contadorLinha);
+        int follow[1] = {ID};
+        modoPanico(follow, 1);
         return;
     }
 }
 
 void decl()
 {
+    int follow[11] = {INT, FLOAT, STRING, ID, READ, PRINT, IF, WHILE, '{', FIM, '}'};
     tipo();
 
     token = obterToken();
     if(token.nome_token != ID) {
-        printf("Erro em decl: esperado id\n");
+        printf("Erro em decl: esperado id na linha %d\n", contadorLinha);
+        modoPanico(follow, 11);
         return;
     }
 
     token = obterToken();
     if(token.nome_token != ';') {
-        printf("Erro em decl: esperado ;\n");
+        printf("Erro em decl: esperado ; na linha %d\n", contadorLinha);
+        modoPanico(follow, 11);
         return;
     }
 }
@@ -766,6 +771,7 @@ void decls()
 
 void factor()
 {
+    int follow[7]= {'*', '/', '+', '-', ',', ')'};
     token = olharToken();  
 
     if(token.nome_token == NUM ||
@@ -781,7 +787,6 @@ void factor()
         token = obterToken(); 
         if(token.nome_token != ')') {
             printf("Erro em factor: esperado ) na linha %d\n", contadorLinha);
-            int follow[7]= {'*', '/', '+', '-', ',', ')'};
             modoPanico(follow, 7);
         }
         return;
@@ -794,7 +799,6 @@ void factor()
     }
 
     printf("erro em factor: token inesperado na linha %d\n", contadorLinha);
-    int follow[7]= {'*', '/', '+', '-', ',', ')'};
     modoPanico(follow, 7);
 }
 
@@ -852,6 +856,7 @@ void args()
 
 void comando_id_linha()
 {
+    int follow[] = {';'};
     token = olharToken();
     
     if(token.nome_token == '=') {  
@@ -866,12 +871,14 @@ void comando_id_linha()
         
         token = obterToken(); 
         if(token.nome_token != ')') {
-            printf("Erro em comando_id_linha: esperado )\n");
+            printf("Erro em comando_id_linha: esperado ) na linha %d\n", contadorLinha);
+            modoPanico(follow, 1);
         }
         return;
     }
 
     printf("erro em comando_id_linha: esperado = ou (\n");
+    modoPanico(follow, 1);
 }
 
 void comando_id()
@@ -882,34 +889,40 @@ void comando_id()
 
 void entrada()
 {
+    int follow[1] = {';'};
     token = obterToken();
 
     if(token.nome_token != '(') {
-        printf("Erro em entrada: esperado (\n");
+        printf("Erro em entrada: esperado ( na linha %d\n", contadorLinha);
+        modoPanico(follow, 1);
         return;
     }
 
     token = obterToken();
 
     if(token.nome_token != ID) {
-        printf("Erro em entrada: esperado id\n");
+        printf("Erro em entrada: esperado id na linha %d\n", contadorLinha);
+        modoPanico(follow, 1);
         return;
     }
 
     token = obterToken();
 
     if(token.nome_token != ')') {
-        printf("Erro em entrada: esperado )\n");
+        printf("Erro em entrada: esperado ) na linha %d\n", contadorLinha);
+        modoPanico(follow, 1);
         return;
     }
 }
 
 void saida()
 {
+    int follow[1] = {';'};
     token = obterToken();
 
     if(olharToken().nome_token != '(') {
-        printf("Erro em saida: esperado (\n");
+        printf("Erro em saida: esperado ( na linha %d\n", contadorLinha);
+        modoPanico(follow, 1);
         return;
     }
 
@@ -919,7 +932,8 @@ void saida()
     token = obterToken();
 
     if(token.nome_token != ')') {
-        printf("Erro em saida: esperado )\n");
+        printf("Erro em saida: esperado ) na linha %d\n", contadorLinha);
+        modoPanico(follow, 1);
         return;
     }    
 }
@@ -934,9 +948,12 @@ void else_opt()
 
 void if_stmt()
 {
+    int follow[9] = {ID, READ, PRINT, IF, WHILE, '{', FIM, '}', ELSE};
     token = obterToken();
+
     if(olharToken().nome_token != '(') {
-        printf("Erro em if_stmt: esperado (\n");
+        printf("Erro em if_stmt: esperado ( na linha %d\n", contadorLinha);
+        modoPanico(follow, 9);
         return;
     }
 
@@ -946,7 +963,8 @@ void if_stmt()
     token = obterToken();
 
     if(token.nome_token != ')') {
-        printf("Erro em if_stmt: esperado )\n");
+        printf("Erro em if_stmt: esperado ) na linha %d\n", contadorLinha);
+        modoPanico(follow, 9);
         return;
     }
 
@@ -957,10 +975,12 @@ void if_stmt()
 
 void while_stmt()
 {
+    int follow[9] = {ID, READ, PRINT, IF, WHILE, '{', FIM, '}', ELSE};
     token = obterToken();
 
     if(olharToken().nome_token != '(') {
-        printf("Erro em while_stmt: esperado (\n");
+        printf("Erro em while_stmt: esperado ( na linha %d\n", contadorLinha);
+        modoPanico(follow, 9);
         return;
     }
     token = obterToken();
@@ -970,7 +990,8 @@ void while_stmt()
     token = obterToken();
 
     if(token.nome_token != ')') {
-        printf("Erro em while_stmt: esperado )\n");
+        printf("Erro em while_stmt: esperado ) na linha %d\n", contadorLinha);
+        modoPanico(follow, 9);
         return;
     }
 
@@ -981,24 +1002,29 @@ void bloco()
 {
     comandos();
 
+    int follow[9] = {ID, READ, PRINT, IF, WHILE, '{', FIM, '}', ELSE};
     token = obterToken();
 
     if(token.nome_token != '}') {
-        printf("Erro em bloco: esperado }\n");
+        printf("Erro em bloco: esperado } na linha %d\n", contadorLinha);
+        modoPanico(follow, 9);
         return;
     }
 }
 
 void comando()
 {
+    int follow[9] = {ID, READ, PRINT, IF, WHILE, '{', FIM, '}', ELSE};
     token = olharToken();
+
     if(token.nome_token == ID) {
         obterToken();
         comando_id();
         token = obterToken();
 
         if(token.nome_token != ';') {
-            printf("Erro em comando: esperado ;\n");
+            printf("Erro em comando: esperado ; na linha %d\n", contadorLinha);
+            modoPanico(follow, 9);
             return;
         }
 
@@ -1008,7 +1034,8 @@ void comando()
         token = obterToken();
 
         if(token.nome_token != ';') {
-            printf("Erro em comando: esperado ;\n");
+            printf("Erro em comando: esperado ; na linha %d\n", contadorLinha);
+            modoPanico(follow, 9);
             return;
         }
     } else if(token.nome_token == PRINT) {
@@ -1016,7 +1043,8 @@ void comando()
         token = obterToken();
 
         if(token.nome_token != ';') {
-            printf("Erro em comando: esperado ;\n");
+            printf("Erro em comando: esperado ; na linha %d\n", contadorLinha);
+            modoPanico(follow, 9);
             return;
         }
     } else if(token.nome_token == IF) {
@@ -1027,7 +1055,8 @@ void comando()
         obterToken();
         bloco();
     } else {
-        return;
+        printf("Token inesperado na linha %d\n", contadorLinha);
+        modoPanico(follow, 9);
     }
 }
 
@@ -1049,7 +1078,7 @@ void programa()
     token = obterToken();
 
     if(token.nome_token != INICIO) {
-        printf("Erro em programa: esperado inicio\n");
+        printf("Erro em programa: esperado inicio na linha %d\n", contadorLinha);
         return;
     }
 
@@ -1058,7 +1087,7 @@ void programa()
 
     token = obterToken();
     if(token.nome_token != FIM) {
-        printf("Erro em programa: esperado fim\n");
+        printf("Erro em programa: esperado fim na linha %d\n", contadorLinha);
         return;
     }
 

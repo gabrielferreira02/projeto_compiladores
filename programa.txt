@@ -1,7 +1,6 @@
 inicio
     int n;
-    int x;
-    n=else;
+    int x
     x=120-1;
     if(1-2){ x=x+n;}
 fim
